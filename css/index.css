@@ -1,0 +1,30 @@
+body{
+    height:100vh;
+    margin:0
+;overflow: hidden;}
+#ta{
+    width:100%;
+    height:50%;
+    resize:none;
+}
+#frame{
+    width:100%;
+    height:40%
+}
+#container{
+    display:flex;
+    flex-direction:row;
+    height:100%
+}
+#fileview{
+    flex:1 0 0;
+    border:1px solid black
+}
+#maincontent{
+    flex:4 0 0;
+    border:1px solid black
+}
+.folderentry .entryname::before{
+    content:"(folder)"
+    
+}

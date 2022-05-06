@@ -1,7 +1,8 @@
-
+import * as files from "./files.js"
 var worker=null
-navigator.serviceWorker.getRegistration().then(a=>{
-	worker=a.active
+let previewDir="./test/firstdir.html"
+navigator.serviceWorker.getRegistration().then(e=>{
+	worker=e.active
 
 })
 
@@ -10,11 +11,11 @@ navigator.serviceWorker.getRegistration().then(a=>{
 
 async function openFile(path){
 	document.getElementById("fs").value=path
-	let file=await getFile(path)
+	let file=await files.getFile(path)
 	if(!file||file.type=="folder")return
 
 
-	document.getElementById("frame").src="./test/firstdir.html"
+	document.getElementById("frame").src=previewDir
 
 
 	document.getElementById("ta").value=await file.content.text()
@@ -23,37 +24,51 @@ async function openFile(path){
 
 }
 
-document.getElementById("fs").addEventListener("change",a=>{
-	openFile(a.target.value)
+document.getElementById("fs").addEventListener("change",e=>{
+	openFile(e.target.value)
 })
 
+document.getElementById("folderCreate").addEventListener("click",a=>{
+	files.createFolder(document.getElementById("folderLocation").value)
+})
 
-document.getElementById("save").addEventListener("click",async a=>{
+async function save(e){
 
-	updateFile(document.getElementById("fs").value,document.getElementById("ta").value)
+	files.updateFile(document.getElementById("fs").value,[document.getElementById("ta").value])
 	document.getElementById("frame").contentWindow.location.reload()
 
 
 
 
-})
+}
+document.getElementById("save").addEventListener("click",save)
+
 
 async function expandFolder(el,dir){
-	let folder=await getFile(dir)
+	let folder=await files.getFile(dir)
 	for(let i in folder.content){
 		let fileEl=document.createElement("div")
-		if(folder.content[i].type=="directory"){
+		fileEl.className=folder.content[i].type+"entry"
+		if(folder.content[i].type=="folder"){
 			let folderNameEl=document.createElement("div")
+			folderNameEl.className="entryname"
 			folderNameEl.append(i)
 			let folderContentEl=document.createElement("div")
 			folderContentEl.style.paddingLeft="10px"
-			folderNameEl.addEventListener("click",a=>{
-				expandFolder(folderContentEl,dir+"/"+i)
+			folderNameEl.addEventListener("click",e=>{
+				if(fileEl.getAttribute("data-expanded")==null){
+					fileEl.setAttribute("data-expanded","")
+					expandFolder(folderContentEl,dir+"/"+i)
+				}else{
+					fileEl.removeAttribute("data-expanded");
+					[...folderContentEl.children].forEach(a=>a.remove())
+				}
 			})
 			fileEl.append(folderNameEl,folderContentEl)
 		}else{
 			fileEl.append(i)
-			fileEl.addEventListener("click",a=>{
+			fileEl.addEventListener("click",e=>{
+				if(e.shiftKey)previewDir="./test"+dir+"/"+i
 				openFile(dir+"/"+i)
 			})
 		}
@@ -61,6 +76,10 @@ async function expandFolder(el,dir){
 	}
 }
 
+displaySource.addEventListener("change",e=>{
+	document.getElementById("frame").contentWindow.location="test"+e.target.value
+})
+
 expandFolder(document.getElementById("fileview"),"")
 
-navigator.serviceWorker.register("worker.js")
+navigator.serviceWorker.register("worker.js",{type:"module"})

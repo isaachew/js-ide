@@ -1,10 +1,12 @@
+import * as files from "./js/files.js"
+
 var loc=new URL(location.href)
 loc.pathname=loc.pathname.slice(0,-9)
 function createResp(rinf,type,...val){
 	return Promise.resolve(new Response(new Blob(val,{type}),rinf))
 }
 
-createErr=url=>createResp({},"text/html",url+" not found")
+var createErr=url=>createResp({},"text/html",url+" not found")
 
 
 //A helper function to convert IDBRequest objects into Promises.
@@ -18,7 +20,7 @@ function waitFor(req){
 
 addEventListener("install",e=>{
 	console.log("installed")
-	caches.open("cache").then(c=>c.addAll(["index.html","create.html","js/create.js","worker.js"]))
+	caches.open("cache").then(c=>c.addAll(["index.html","css/index.css","js/index.js","js/files.js","worker.js"]))
 })
 
 addEventListener("active",e=>{
@@ -33,13 +35,20 @@ addEventListener("fetch",e=>{
 			//Delegate to simulated filesystem
 			let filePath=url.pathname.slice(loc.pathname.length+4)
 
-			let sysdb=await waitFor(indexedDB.open("filesys"))
-			let trans=sysdb.transaction("files")
-			let os=trans.objectStore("files")
-			let retrievedFile=await waitFor(os.get(filePath))
+			if(filePath.endsWith("/")){//folder
+				let indexFile=await files.getFile(filePath+"index.html")
+				return new Response(indexFile.content)
+			}
+			let retrievedFile=await files.getFile(filePath)
+
 			//console.log(retrievedFile)
-			return new Response(retrievedFile.content)
+			if(retrievedFile.type=="file"){
+				return new Response(retrievedFile.content)
+			}else{
+				return new Response("add trailing slash")
+			}
 		})().catch(a=>{
+			console.log(a)
 			return createErr(e.request.url)
 		}))
 	}else{
