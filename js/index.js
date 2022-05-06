@@ -82,4 +82,4 @@ displaySource.addEventListener("change",e=>{
 
 expandFolder(document.getElementById("fileview"),"")
 
-navigator.serviceWorker.register("worker.js",{type:"module"})
+navigator.serviceWorker.register("worker.js")

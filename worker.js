@@ -1,4 +1,17 @@
-import * as files from "./js/files.js"
+
+//A helper function to convert IDBRequest objects into Promises.
+function waitFor(req){
+    if(req.readyState=="done")return req.result
+    return new Promise((res,rej)=>{
+        req.onsuccess=e=>res(req.result)
+        req.onerror=e=>rej(req.error)
+    })
+}
+
+async function getFile(os,path){
+	return await waitFor(os.get(path))
+}
+
 
 var loc=new URL(location.href)
 loc.pathname=loc.pathname.slice(0,-9)
@@ -9,14 +22,6 @@ function createResp(rinf,type,...val){
 var createErr=url=>createResp({},"text/html",url+" not found")
 
 
-//A helper function to convert IDBRequest objects into Promises.
-function waitFor(req){
-    if(req.readyState=="done")return req.result
-    return new Promise((res,rej)=>{
-        req.onsuccess=e=>res(req.result)
-        req.onerror=e=>rej(req.error)
-    })
-}
 
 addEventListener("install",e=>{
 	console.log("installed")
@@ -35,11 +40,15 @@ addEventListener("fetch",e=>{
 			//Delegate to simulated filesystem
 			let filePath=url.pathname.slice(loc.pathname.length+4)
 
+			let db=await waitFor(indexedDB.open("filesys"))
+			let trans=db.transaction("files","readwrite")
+			let os=trans.objectStore("files")
+
 			if(filePath.endsWith("/")){//folder
-				let indexFile=await files.getFile(filePath+"index.html")
+				let indexFile=await getFile(os,filePath+"index.html")
 				return new Response(indexFile.content)
 			}
-			let retrievedFile=await files.getFile(filePath)
+			let retrievedFile=await getFile(os,filePath)
 
 			//console.log(retrievedFile)
 			if(retrievedFile.type=="file"){
