@@ -18,7 +18,7 @@ async function openFile(path){
 	document.getElementById("frame").src=previewDir
 
 
-	document.getElementById("ta").value=await file.content.text()
+	document.getElementById("editor").value=await file.content.text()
 
 
 
@@ -32,9 +32,22 @@ document.getElementById("folderCreate").addEventListener("click",a=>{
 	files.createFolder(document.getElementById("folderLocation").value)
 })
 
+
+document.getElementById("editor").addEventListener("beforeinput",a=>{
+	console.log(a.inputType)
+	if(a.inputType=="insertLineBreak"){
+		let lineStart=("\n"+a.target.value).slice(0,a.target.selectionStart).lastIndexOf("\n")
+
+		let indent=a.target.value.slice(lineStart).match(/\s*/)[0]
+
+		a.target.setRangeText("\n"+indent,a.target.selectionStart,a.target.selectionEnd,"end")
+		a.preventDefault()
+	}
+})
+
 async function save(e){
 
-	files.updateFile(document.getElementById("fs").value,[document.getElementById("ta").value])
+	files.updateFile(document.getElementById("fs").value,[document.getElementById("editor").value])
 	document.getElementById("frame").contentWindow.location.reload()
 
 

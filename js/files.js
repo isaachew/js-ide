@@ -1,4 +1,4 @@
-let mimeTypes={"html":"text/html","htm":"text/html","css":"text/css","js":"application/javascript","json":"application/json","txt":"text/plain"}
+export let mimeTypes={"html":"text/html","htm":"text/html","css":"text/css","js":"application/javascript","json":"application/json","txt":"text/plain"}
 
 
 let req=indexedDB.open("filesys",1)
