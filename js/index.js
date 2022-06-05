@@ -61,24 +61,33 @@ async function expandFolder(el,dir){
 	let folder=await files.getFile(dir)
 	for(let i in folder.content){
 		let fileEl=document.createElement("div")
-		fileEl.className=folder.content[i].type+"entry"
 		if(folder.content[i].type=="folder"){
+			fileEl.className="folderentry closed"
 			let folderNameEl=document.createElement("div")
 			folderNameEl.className="entryname"
 			folderNameEl.append(i)
 			let folderContentEl=document.createElement("div")
 			folderContentEl.style.paddingLeft="10px"
 			folderNameEl.addEventListener("click",e=>{
-				if(fileEl.getAttribute("data-expanded")==null){
-					fileEl.setAttribute("data-expanded","")
-					expandFolder(folderContentEl,dir+"/"+i)
+				if(fileEl.classList.contains("closed")){
+					fileEl.classList.remove("closed")
+					fileEl.classList.add("open")
+					let isInit=fileEl.classList.contains("initialised")
+					if(!isInit){
+						fileEl.classList.add("initialised")
+						expandFolder(folderContentEl,dir+"/"+i)
+					}else{
+						folderContentEl.style.display="block"
+					}
 				}else{
-					fileEl.removeAttribute("data-expanded");
-					[...folderContentEl.children].forEach(a=>a.remove())
+					fileEl.classList.remove("open")
+					fileEl.classList.add("closed");
+					folderContentEl.style.display="none"
 				}
 			})
 			fileEl.append(folderNameEl,folderContentEl)
 		}else{
+			fileEl.className="fileentry"
 			fileEl.append(i)
 			fileEl.addEventListener("click",e=>{
 				if(e.shiftKey)previewDir="./test"+dir+"/"+i

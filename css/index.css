@@ -25,12 +25,37 @@ body{
     border:1px solid black
 }
 #editor{
-    flex:1
-;border: 1px solid black;}
+    flex:1;
+    border: 1px solid black
+}
 #frame{
-    flex:1
-;border: 1px solid black;}
-.folderentry .entryname::before{
-    content:"(folder)"
+    flex:1;
+    border: 1px solid black
+}
+#fileview{
+    overflow-y:auto
+}
+.folderentry > .entryname::before{
+    color:red;
+    display:inline-block;
+    width:0
+}
+.folderentry.closed > .entryname::before{
+    content:"";
+    border-left: 9px solid black;
+    border-top: 5px solid transparent;
+    border-bottom: 5px solid transparent;
+    margin:2px 2.5px;
 
+}
+.folderentry.open > .entryname::before{
+    content:"";
+    border-top: 9px solid black;
+    border-left: 5px solid transparent;
+    border-right: 5px solid transparent;
+    margin:2.5px 2px;
+}
+.fileentry,.folderentry{
+    font-family: system-ui;
+    padding:2px
 }

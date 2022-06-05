@@ -17,6 +17,11 @@ function waitFor(req){
     })
 }
 
+function getType(path){
+	let ext=path.match(/\.(.+)/)
+	return mimeTypes[(ext||["","html"])[1]]||"text/html"
+}
+
 let curTransaction=null
 async function getObjStore(){
     //if(curTransaction==null){
@@ -37,17 +42,17 @@ async function getParentEntry(os,path){
     return {entry:folder,name:filename[2]}
 }
 
-async function createFile(path,content){
+async function createFile(path,content,type=null){
 	let os=await getObjStore()
     let parent=await getParentEntry(os,path)
     if(parent.entry.content[parent.name])throw new Error("file already exists")
 	parent.entry.content[parent.name]={type:"file"}
 	os.put(parent.entry)
 
-    os.add({path,type:"file",content:new File([content],path)})
+    os.add({path,type:"file",content:new File([content],path,{type:type??getType(path)})})
 }
 
-async function updateFile(path,content){
+async function updateFile(path,content,type=null){
 	let os=await getObjStore()
     let parent=await getParentEntry(os,path)
     if(parent.entry.content[parent.name]==undefined){
@@ -55,7 +60,7 @@ async function updateFile(path,content){
 		parent.entry.content[parent.name]={type:"file"}
 		os.put(parent.entry)
 	}
-	os.put({path,type:"file",content:new File(content,path)})
+	os.put({path,type:"file",content:new File(content,path,{type:type??getType(path)})})
 }
 
 async function createFolder(path){
@@ -126,4 +131,4 @@ async function loadFiles(dir="",handle){
     }
 }
 
-export {createFile,createFolder,deleteFile,deleteFolder,getFile,updateFile,saveFiles,loadFiles}
+export {createFile,createFolder,deleteFile,deleteFolder,getFile,updateFile,saveFiles,loadFiles,getType}
