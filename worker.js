@@ -1,31 +1,18 @@
-
-//A helper function to convert IDBRequest objects into Promises.
-function waitFor(req){
-    if(req.readyState=="done")return req.result
-    return new Promise((res,rej)=>{
-        req.onsuccess=e=>res(req.result)
-        req.onerror=e=>rej(req.error)
-    })
-}
-
-async function getFile(os,path){
-	return await waitFor(os.get(path))
-}
-
+import * as files from "./js/files.js"
 
 var loc=new URL(location.href)
-loc.pathname=loc.pathname.slice(0,-9)
+loc.pathname=loc.pathname.slice(0,-9)//remove "worker.js"
 function createResp(rinf,type,...val){
 	return Promise.resolve(new Response(new Blob(val,{type}),rinf))
 }
 
-var createErr=url=>createResp({},"text/html",url+" not found")
+var createErr=url=>createResp({status:404,statusText:"Not Found"},"text/html",url+" not found")
 
-
+var cacheUrls=["index.html","css/index.css","js/index.js","js/files.js","worker.js"]
 
 addEventListener("install",e=>{
 	console.log("installed")
-	caches.open("cache").then(c=>c.addAll(["index.html","css/index.css","js/index.js","js/files.js","worker.js"]))
+	caches.open("cache").then(c=>c.addAll(cacheUrls))
 })
 
 addEventListener("active",e=>{
@@ -34,23 +21,23 @@ addEventListener("active",e=>{
 
 //Fetch event handler
 addEventListener("fetch",e=>{
+    console.log("intercepted",e)
 	let url=new URL(e.request.url)
-	if(url.pathname.startsWith(loc.pathname+"test/")){
+	if(url.pathname.startsWith(loc.pathname+"test")){
 		e.respondWith((async res=>{
 			//Delegate to simulated filesystem
 			let filePath=url.pathname.slice(loc.pathname.length+4)
 
-			let db=await waitFor(indexedDB.open("filesys"))
-			let trans=db.transaction("files","readwrite")
-			let os=trans.objectStore("files")
-
 			if(filePath.endsWith("/")){//folder
-				let indexFile=await getFile(os,filePath+"index.html")
+				let indexFile=await files.getEntry(filePath+"index.html")
 				return new Response(indexFile.content)
 			}
-			let retrievedFile=await getFile(os,filePath)
+			let retrievedFile=await files.getEntry(filePath)
 
 			//console.log(retrievedFile)
+            if(!retrievedFile){//no file
+                return createErr(e.request.url)
+            }
 			if(retrievedFile.type=="file"){
 				return new Response(retrievedFile.content)
 			}else{
@@ -60,8 +47,9 @@ addEventListener("fetch",e=>{
 			console.log(a)
 			return createErr(e.request.url)
 		}))
-	}else{
-		e.respondWith(caches.open("cache")
+	}else if(e.request.url.startsWith(loc)){
+        console.log("in domain")
+        e.respondWith(caches.open("cache")
 			.then(che=>fetch(e.request)
 			.then(a=>{
 				if(a.ok){
@@ -69,10 +57,13 @@ addEventListener("fetch",e=>{
 					return a
 				}
 				che.delete(e.request)
-				return createErr(url)
+				return a
 			},a=>che.match(e.request)
 			.then(mch=>mch||createErr(url))
 		)))
-	}
+
+	}else{
+        console.log("not domain")
+    }
 	//e.createRespondWith(new createResponse("Page visit #"+ ++a))
 })

@@ -48,6 +48,12 @@ body{
     margin:2px 2.5px;
 
 }
+.folderentry.closed > .foldercontent{
+    display:none;
+}
+.foldercontent{
+    padding-left:10px;
+}
 .folderentry.open > .entryname::before{
     content:"";
     border-top: 9px solid black;
@@ -58,4 +64,7 @@ body{
 .fileentry,.folderentry{
     font-family: system-ui;
     padding:2px
+}
+.selected{
+    color:red
 }
