@@ -26,8 +26,8 @@ addEventListener("fetch",e=>{
 	if(url.pathname.startsWith(loc.pathname+"test")){
 		e.respondWith((async res=>{
 			//Delegate to simulated filesystem
-			let filePath=url.pathname.slice(loc.pathname.length+4)
-
+			let filePath=decodeURIComponent(url.pathname.slice(loc.pathname.length+4))
+			console.log(filePath)
 			if(filePath.endsWith("/")){//folder
 				let indexFile=await files.getEntry(filePath+"index.html")
 				return new Response(indexFile.content)
@@ -63,7 +63,7 @@ addEventListener("fetch",e=>{
 		)))
 
 	}else{
-        console.log("not domain")
+        console.log("not in domain")
     }
 	//e.createRespondWith(new createResponse("Page visit #"+ ++a))
 })

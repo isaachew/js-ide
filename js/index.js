@@ -155,15 +155,17 @@ document.addEventListener("keydown",e=>{
 	switch(e.key){
 		case "Backspace":
 		console.log(e,selectedEntry)
-		//files.deleteEntry(selectedEntry)
+		files.deleteEntry(selectedEntry,1)
+		break;
 	}
 })
 
-/*
+
 document.getElementById("upload").addEventListener("click",()=>{
 	files.createFolder("/newfile")
 	files.loadFiles("/newfile")
 })
+/*
 document.getElementById("download").addEventListener("click",()=>{
 	files.saveFiles("")
 })
