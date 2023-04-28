@@ -162,8 +162,7 @@ document.addEventListener("keydown",e=>{
 
 
 document.getElementById("upload").addEventListener("click",()=>{
-	files.createFolder("/newfile")
-	files.loadFiles("/newfile")
+	files.writeFileList()
 })
 /*
 document.getElementById("download").addEventListener("click",()=>{
