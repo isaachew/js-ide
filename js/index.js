@@ -151,16 +151,24 @@ async function expandFolder(el,path,index){
 		*/
 	}
 }
-document.addEventListener("keydown",e=>{
+document.getElementById("fileview").addEventListener("keydown",e=>{
+	console.log("keydown")
 	switch(e.key){
 		case "Backspace":
 		console.log(e,selectedEntry)
 		files.deleteEntry(selectedEntry,1)
 		break;
+		case "R":
+		files.moveEntry(selectedEntry,"/")
 	}
 })
 
-
+document.getElementById("deleteEntry").addEventListener("click",()=>{
+	files.deleteEntry(selectedEntry)
+})
+document.getElementById("moveEntry").addEventListener("click",()=>{
+	files.moveEntry(selectedEntry,document.getElementById("moveLocation").value)
+})
 document.getElementById("upload").addEventListener("click",()=>{
 	files.writeFileList()
 })
@@ -176,4 +184,4 @@ displaySource.addEventListener("change",e=>{
 
 expandFolder(document.getElementById("fileview"),"","")
 
-navigator.serviceWorker.register("worker.js",{type:"module"})
+navigator.serviceWorker.register("worker.js"/*,{type:"module"}*/)

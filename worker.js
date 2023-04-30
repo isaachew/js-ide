@@ -1,4 +1,8 @@
-import * as files from "./js/files.js"
+//import * as files from "./js/files.js"
+import("./js/files.js").then(a=>{
+	console.log("files set")
+	this.files=a
+})
 
 var loc=new URL(location.href)
 loc.pathname=loc.pathname.slice(0,-9)//remove "worker.js"

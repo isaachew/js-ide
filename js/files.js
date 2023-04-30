@@ -27,12 +27,22 @@ function getMimeType(path){
 let curTransaction=null
 let objStore=null
 async function genObjectStore(){
-    curTransaction=(await waitFor(req)).transaction("files","readwrite")
-    objStore=curTransaction.objectStore("files")
-    return objStore
+    console.log("genObjectStore")
+    try{
+        curTransaction=(await waitFor(req)).transaction("files","readwrite")
+        objStore=curTransaction.objectStore("files")
+        return objStore
+    }catch{
+        console.log("reopen db connection")
+        req=indexedDB.open("filesys",1);
+        await waitFor(req)
+        return await genObjectStore()
+    }
 }
 async function getObjStore(){
+    console.log("getObjStore")
     if(curTransaction==null){
+        console.log("null")
         return genObjectStore()
 	    /*
         impossible to detect if a transaction is complete or not
@@ -50,10 +60,15 @@ async function getObjStore(){
         */
     }else{
         try{
-            return curTransaction.objectStore("files");
+            let objStore=curTransaction.objectStore("files");
+            console.log("no error?")
+            await waitFor(objStore.get(""))
+            console.log("no error")
+            return objStore
         }catch{
+            console.log("error")
             curTransaction=null
-            return genObjectStore()
+            return await genObjectStore()
         }
     }
 }
