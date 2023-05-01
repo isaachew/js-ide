@@ -203,7 +203,7 @@ export async function deleteByIndex(index){
 }
 export async function deleteEntry(path,folder=false){
     let obs=await getObjStore()
-    let entryData=getEntry(path)
+    let entryData=await getEntry(path)
     if(entryData.type=="folder"&&!folder)return
     deleteByIndex(entryData.index)
 }
