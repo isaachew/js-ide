@@ -164,7 +164,7 @@ document.getElementById("fileview").addEventListener("keydown",e=>{
 })
 
 document.getElementById("deleteEntry").addEventListener("click",()=>{
-	files.deleteEntry(selectedEntry)
+	files.deleteEntry(selectedEntry,1)
 })
 document.getElementById("moveEntry").addEventListener("click",()=>{
 	files.moveEntry(selectedEntry,document.getElementById("moveLocation").value)
@@ -184,4 +184,4 @@ displaySource.addEventListener("change",e=>{
 
 expandFolder(document.getElementById("fileview"),"","")
 
-navigator.serviceWorker.register("worker.js"/*,{type:"module"}*/)
+navigator.serviceWorker.register("worker.js",{type:"module"})

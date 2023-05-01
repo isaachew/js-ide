@@ -98,7 +98,7 @@ async function getChildWithName(dirObj,name){
     return curNode
 }
 
-async function createEntryByIndex(parent,name,type,content,update=false){
+export async function createEntryByIndex(parent,name,type,content,update=false){
     let obs=await getObjStore()
     let pEntry=await getEntryByIndex(parent)
     if(pEntry?.type!="folder")throw new Error("path does not exist")
@@ -119,7 +119,7 @@ async function createEntryByIndex(parent,name,type,content,update=false){
     return index
 }
 
-async function createEntry(path,type,content,update=false){
+export async function createEntry(path,type,content,update=false){
     let obs=await getObjStore()
     let pathParts=path.split("/")
     let name=pathParts.pop()
@@ -181,34 +181,31 @@ export async function moveEntry(path,newPath){
     await moveEntryByIndex(oldEntry.index,newName,parentEntry.index)
 }
 
-export async function deleteByIndex(index){//assume that deleted from parent
+export async function deleteSubtree(index){//assume that deleted from parent
     let obs=await getObjStore()
     let entryData=await waitFor(obs.get(index))
     console.log(`deleting index ${index} / name ${entryData.name}`)
     if(entryData.type=="folder"){
         for(var [name,{index:childIndex}] of entryData.content){
-            deleteByIndex(childIndex)
+            deleteSubtree(childIndex)
         }
     }
     obs.delete(index)
 
 }
+export async function deleteByIndex(index){
+    let obs=await getObjStore()
+    let entryData=await waitFor(obs.get(index))
+    let parentEntry=await waitFor(obs.get(entryData.parent))
+    deleteSubtree(index)
+    parentEntry.content.delete(entryData.name)
+    obs.put(parentEntry)
+}
 export async function deleteEntry(path,folder=false){
     let obs=await getObjStore()
-    let pathParts=path.split("/")
-    let name=pathParts.pop()//last segment of path
-    if(pathParts.length==0)throw new Error("no root")
-    let parent=pathParts.join("/")
-    let pEntry=await getEntry(parent)
-    if(pEntry==undefined)throw new Error("path does not exist")
-    if(!pEntry.content.has(name))return;//file does not exist
-    let entryData=pEntry.content.get(name)
-    if(entryData.type=="folder"&&!folder){
-        return
-    }
+    let entryData=getEntry(path)
+    if(entryData.type=="folder"&&!folder)return
     deleteByIndex(entryData.index)
-    pEntry.content.delete(name)
-    obs.put(pEntry)
 }
 
 export async function writeFileList(index="",list=null){
